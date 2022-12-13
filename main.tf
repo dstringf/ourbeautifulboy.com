@@ -7,7 +7,7 @@ terraform {
     }
   }
 }
-# ... the cloud
+# ... to the cloud
 provider "aws" {
   # Configuration options
 }
@@ -91,6 +91,23 @@ resource "aws_s3_bucket_public_access_block" "accesslogs-www-ourbeautifulboy-com
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+resource "aws_s3_bucket_lifecycle_configuration" "accesslogs-www-ourbeautifulboy-com_lifecycle" {
+  bucket = aws_s3_bucket.accesslogs-www-ourbeautifulboy-com.id
+  rule {
+    id = "low-cost-logs"
+    status = "Enabled"
+    transition {
+      days = 30
+      storage_class = "ONEZONE_IA"      
+    }
+    expiration {
+      days = 365
+    }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 1
+    }
+  }
 }
 # Turn on access logs and send them to the access log bucket just created
 resource "aws_s3_bucket_logging" "www-ourbeautifulboy-com_accesslogs" {
